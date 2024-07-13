@@ -1,0 +1,29 @@
+/* Attendance.css */
+
+.present-day {
+    background-color: green;
+    color: white;
+    font-size: 0.8em;
+    padding: 2px;
+}
+
+.absent-day {
+    background-color: lightcoral; /* Light red color */
+    color: white;
+    font-size: 0.8em;
+    padding: 2px;
+}
+
+.leave-day {
+    background-color: yellow;
+    color: black;
+    font-size: 0.8em;
+    padding: 2px;
+}
+
+.holiday {
+    background-color: purple;
+    color: white;
+    font-size: 0.8em;
+    padding: 2px;
+}

@@ -1,0 +1,47 @@
+.subject-header {
+    color: #007bff;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.subject-card {
+    border: 1px solid #007bff;
+    border-radius: 8px;
+}
+
+.subject-card .card-title {
+    color: #007bff;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.subject-card .card-text {
+    color: #17a2b8;
+    font-size: 16px;
+}
+
+.student-section {
+    margin-top: 20px;
+}
+
+.student-header {
+    color: #28a745;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.student-list {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.student-item {
+    color: #dc3545;
+    font-size: 18px;
+    margin: 5px 0;
+}
+
+.alert {
+    margin-top: 20px;
+}
