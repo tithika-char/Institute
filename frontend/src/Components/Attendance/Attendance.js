@@ -1,78 +1,101 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Navbar from '../global/Navbar';
 import Sidebar from '../global/Sidebar';
 import Calendar from 'react-calendar'; // Import Calendar component
 import 'react-calendar/dist/Calendar.css'; // Import Calendar styles
-import axios from 'axios';
 import './Attendance.css'; // Import custom CSS file
 
-const Attendance = ({ regno }) => {
+const Attendance = () => {
     // State to store the selected date
     const [selectedDate, setSelectedDate] = useState(new Date());
-    // State to store attendance data for the student
-    const [attendanceData, setAttendanceData] = useState([]);
+    const [attendanceDates, setAttendanceDates] = useState([]);
 
     // Function to handle date change
     const handleDateChange = (date) => {
         setSelectedDate(date);
     };
 
-    // Sample function to customize tile class name based on date
-    const tileClassName = ({ date }) => {
-        const dayOfMonth = date.getDate();
-        const month = date.getMonth();
-
-        // Check if the date is in April
-        if (month === 3 && dayOfMonth === selectedDate.getDate()) {
-            return 'present-day'; // Green color for present day
-        }
-
-        // Check if the date is in the past
-        if (date < new Date()) {
-            // Check if the date is a weekend (Saturday or Sunday)
-            const dayOfWeek = date.getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                return 'weekend'; // Apply styles for weekends
-            }
-
-            // Check if the date is an absent day
-            // For demonstration purposes, let's consider the 10th, 15th, and 20th as absent days
-            if ([10, 15, 20].includes(dayOfMonth)) {
-                return 'absent-day'; // Light red color for absent days
-            }
-
-            // Check if the date is a leave day
-            // For demonstration purposes, let's consider the 5th, 12th, and 25th as leave days
-            if ([5, 12, 25].includes(dayOfMonth)) {
-                return 'leave-day'; // Yellow color for leave days
-            }
-
-            // Check if the date is a holiday
-            // For demonstration purposes, let's consider the 1st and 30th as holidays
-            if ([1, 30].includes(dayOfMonth)) {
-                return 'holiday'; // Purple color for holidays
-            }
-        }
-
-        return null; // Default class for other days
-    };
-
-    // Function to fetch attendance data for a specific student
+    // Function to fetch attendance data
     const fetchAttendanceData = async (regno) => {
         try {
-            const response = await axios.get(`http://localhost:3001/teacher/attendance/${regno}`);
-            setAttendanceData(response.data.attendance);
+            const response = await axios.get(`http://localhost:3001/teacher/attendance/${encodeURIComponent(regno)}`);
+            const attendanceData = response.data.attendance.map((item) => new Date(item.date));
+            setAttendanceDates(attendanceData);
         } catch (error) {
             console.error('Error fetching attendance data:', error);
         }
     };
 
-    // useEffect to fetch attendance data when component mounts or regno changes
+    // useEffect to fetch attendance data when component mounts
     useEffect(() => {
-        if (regno) {
-            fetchAttendanceData(regno);
+        const regno = localStorage.getItem('regno'); // Or any method to dynamically get the regno
+        fetchAttendanceData(regno);
+    }, []);
+
+    // Function to count number of present days from April till selectedDate
+    const countPresentDaysFromApril = () => {
+        const startDate = new Date(selectedDate.getFullYear(), 3, 1); // April 1st of the current year
+        return attendanceDates.filter(date => {
+            return (
+                date >= startDate && // Date is after or equal to April 1st
+                date <= selectedDate && // Date is before or equal to selectedDate
+                date.getDay() !== 0 && // Exclude Sundays
+                date.getDay() !== 6 && // Exclude Saturdays
+                attendanceDates.some(
+                    (attendanceDate) =>
+                        attendanceDate.getDate() === date.getDate() &&
+                        attendanceDate.getMonth() === date.getMonth() &&
+                        attendanceDate.getFullYear() === date.getFullYear()
+                )
+            );
+        }).length;
+    };
+
+    // Function to count number of absent days from April till selectedDate
+    const countAbsentDaysFromApril = () => {
+        const startDate = new Date(selectedDate.getFullYear(), 3, 1); // April 1st of the current year
+        return Array.from({ length: Math.ceil((selectedDate - startDate) / (1000 * 3600 * 24)) }, (_, index) => {
+            const dateToCheck = new Date(startDate);
+            dateToCheck.setDate(startDate.getDate() + index);
+            return dateToCheck;
+        }).filter(date => {
+            return (
+                date >= startDate && // Date is after or equal to April 1st
+                date <= selectedDate && // Date is before or equal to selectedDate
+                date.getDay() !== 0 && // Exclude Sundays
+                date.getDay() !== 6 && // Exclude Saturdays
+                !attendanceDates.some(
+                    (attendanceDate) =>
+                        attendanceDate.getDate() === date.getDate() &&
+                        attendanceDate.getMonth() === date.getMonth() &&
+                        attendanceDate.getFullYear() === date.getFullYear()
+                )
+            );
+        }).length;
+    };
+
+    // Function to customize tile class name
+    const tileClassName = ({ date, view }) => {
+        if (view === 'month') {
+            const isPresent = attendanceDates.some(
+                (attendanceDate) =>
+                    attendanceDate.getDate() === date.getDate() &&
+                    attendanceDate.getMonth() === date.getMonth() &&
+                    attendanceDate.getFullYear() === date.getFullYear()
+            );
+            if (isPresent) {
+                return 'present-day'; // Custom CSS class for present day
+            } else {
+                // Check if the date is after April 1st and not a weekend
+                const startDate = new Date(date.getFullYear(), 3, 1); // April 1st of the current year
+                if (date >= startDate && date.getDay() !== 0 && date.getDay() !== 6) {
+                    return 'absent-day'; // Mark as absent for weekdays not present in attendanceDates
+                }
+            }
         }
-    }, [regno]); // Trigger fetchAttendanceData whenever regno changes
+        return null;
+    };
 
     return (
         <div>
@@ -81,9 +104,13 @@ const Attendance = ({ regno }) => {
                 <div className="row row-offcanvas row-offcanvas-left">
                     <Sidebar />
                     <div className="col main pt-5 mt-3">
-                        <p className="lead d-none d-sm-block">Student attendance</p>
+
+                    <div className="row mb-3" style={{ textAlign: 'center', color: 'white', backgroundColor: 'darkgreen' }}>
+                            <h2>STUDENT  ATTENDANCE    STATUS</h2>
+                        </div>
+                   
                         <div className="row mb-3">
-                            <h2>Attendance status</h2>
+                            {/* <h2>Attendance Status</h2> */}
                         </div>
                         <hr />
                         <div className="row">
@@ -94,27 +121,24 @@ const Attendance = ({ regno }) => {
                                     tileClassName={tileClassName} // Apply custom class names to tiles
                                 />
                             </div>
+                        </div>
+                        <div className="row mt-3">
                             <div className="col">
-                                <div className="card">
+                                <div className="card green-card"> {/* Apply green-card class */}
                                     <div className="card-body">
-                                        <h5 className="card-title">Attendance Dates</h5>
-                                        <table className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">Date</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {attendanceData.map((item, index) => (
-                                                    <tr key={index}>
-                                                        <td>{item.date}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                        <h5 className="card-title">   Present Days Count from April  <i className="fas fa-school mr-2"></i> </h5>
+                                       <br></br> <p className="card-text">{countPresentDaysFromApril()}</p>
                                     </div>
                                 </div>
                             </div>
+                            <div className="col">
+                    <div className="card red-card"> {/* Apply red-card class */}
+                        <div className="card-body">
+                            <h5 className="card-title"> Absent Days Count from April  <i className="fas fa-school mr-2"></i> </h5>
+                           <br></br> <p className="card-text">{countAbsentDaysFromApril()}</p>
+                        </div>
+                    </div>
+                </div>
                         </div>
                     </div>
                 </div>

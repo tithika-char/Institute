@@ -493,7 +493,7 @@ router.post('/attendance', (req, res) => {
 router.get('/attendance/:regno', (req, res) => {
   const { regno } = req.params;
 
-  const sql = 'SELECT date FROM tbl_attendance WHERE regno = ?';
+  const sql = 'SELECT DATE_FORMAT(date, "%Y-%m-%d") AS date FROM tbl_attendance WHERE regno = ?';
   db.query(sql, [regno], (err, results) => {
       if (err) {
           console.error('Error fetching attendance data:', err);
@@ -503,6 +503,7 @@ router.get('/attendance/:regno', (req, res) => {
       res.status(200).json({ attendance: results });
   });
 });
+
 
 
 

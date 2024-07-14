@@ -1,29 +1,29 @@
 /* Attendance.css */
-
 .present-day {
-    background-color: green;
+    background-color: #4caf50; /* Green color */
     color: white;
-    font-size: 0.8em;
-    padding: 2px;
+    border-radius: 50%; /* Rounded shape */
+    /* Adjust width */
+     /* Adjust height */
+    
+  
+    /* Adjust font size */
 }
-
+/* Style for absent-day tiles */
 .absent-day {
-    background-color: lightcoral; /* Light red color */
+    background-color: #f44336; /* Red color */
     color: white;
-    font-size: 0.8em;
-    padding: 2px;
+    border-radius: 50%; /* Rounded shape */
+   /* Adjust height */
+   
+   
+    /* Adjust font size */
 }
+/* Attendance.css */
 
-.leave-day {
-    background-color: yellow;
-    color: black;
-    font-size: 0.8em;
-    padding: 2px;
+.green-card {
+    background-color: lightgreen;
 }
-
-.holiday {
-    background-color: purple;
-    color: white;
-    font-size: 0.8em;
-    padding: 2px;
+.red-card {
+    background-color: lightcoral;
 }
